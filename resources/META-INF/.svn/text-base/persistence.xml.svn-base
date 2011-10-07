@@ -1,0 +1,112 @@
+<!--
+  ~ Hibernate, Relational Persistence for Idiomatic Java
+  ~
+  ~ Copyright (c) 2010, Red Hat Inc. or third-party contributors as
+  ~ indicated by the @author tags or express copyright attribution
+  ~ statements applied by the authors.  All third-party contributions are
+  ~ distributed under license by Red Hat Inc.
+  ~
+  ~ This copyrighted material is made available to anyone wishing to use, modify,
+  ~ copy, or redistribute it subject to the terms and conditions of the GNU
+  ~ Lesser General Public License, as published by the Free Software Foundation.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  ~ or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
+  ~ for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this distribution; if not, write to:
+  ~ Free Software Foundation, Inc.
+  ~ 51 Franklin Street, Fifth Floor
+  ~ Boston, MA  02110-1301  USA
+  -->
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0">
+
+    <persistence-unit name="org.hibernate.tutorial.jpa">
+        
+        <description>
+        </description>
+		
+		<class>bidirectional.one.to.one.address.person.notnullable.eager.person.address.notnullable.eager.B1t1PersonFEFE</class>		
+		<class>bidirectional.one.to.one.address.person.notnullable.eager.person.address.notnullable.eager.B1t1AddressFEFE</class>
+		
+		<class>bidirectional.one.to.one.address.person.notnullable.eager.person.address.notnullable.lazy.B1t1PersonFEFL</class>		
+		<class>bidirectional.one.to.one.address.person.notnullable.eager.person.address.notnullable.lazy.B1t1AddressFEFL</class>				
+
+		<class>bidirectional.one.to.one.address.person.notnullable.lazy.person.address.notnullable.lazy.B1t1PersonFLFL</class>				
+		<class>bidirectional.one.to.one.address.person.notnullable.lazy.person.address.notnullable.lazy.B1t1AddressFLFL</class>				
+
+		<class>bidirectional.one.to.one.address.person.notnullable.lazy.person.address.notnullable.eager.B1t1AddressFLFE</class>				
+		<class>bidirectional.one.to.one.address.person.notnullable.lazy.person.address.notnullable.eager.B1t1PersonFLFE</class>				
+
+		<class>bidirectional.one.to.one.address.person.notnullable.eager.person.address.nullable.eager.B1t1AddressFETE</class>				
+		<class>bidirectional.one.to.one.address.person.notnullable.eager.person.address.nullable.eager.B1t1PersonFETE</class>				
+
+		<class>bidirectional.one.to.one.address.person.notnullable.eager.person.address.nullable.lazy.B1t1AddressFETL</class>				
+		<class>bidirectional.one.to.one.address.person.notnullable.eager.person.address.nullable.lazy.B1t1PersonFETL</class>				
+
+		<class>bidirectional.one.to.one.address.person.notnullable.eager.person.address.nullable.eager.B1t1AddressFETE</class>				
+		<class>bidirectional.one.to.one.address.person.notnullable.eager.person.address.nullable.eager.B1t1PersonFETE</class>				
+
+		<class>bidirectional.one.to.one.address.person.notnullable.lazy.person.address.nullable.eager.B1t1AddressFLTE</class>				
+		<class>bidirectional.one.to.one.address.person.notnullable.lazy.person.address.nullable.eager.B1t1PersonFLTE</class>				
+
+		<class>bidirectional.one.to.one.address.person.notnullable.lazy.person.address.nullable.lazy.B1t1AddressFLTL</class>				
+		<class>bidirectional.one.to.one.address.person.notnullable.lazy.person.address.nullable.lazy.B1t1PersonFLTL</class>				
+
+		<class>bidirectional.one.to.one.address.person.nullable.eager.person.address.notnullable.eager.B1t1AddressTEFE</class>				
+		<class>bidirectional.one.to.one.address.person.nullable.eager.person.address.notnullable.eager.B1t1PersonTEFE</class>				
+
+		<class>bidirectional.one.to.one.address.person.nullable.eager.person.address.notnullable.lazy.B1t1AddressTEFL</class>				
+		<class>bidirectional.one.to.one.address.person.nullable.eager.person.address.notnullable.lazy.B1t1PersonTEFL</class>				
+
+		<class>bidirectional.one.to.one.address.person.nullable.eager.person.address.nullable.lazy.B1t1AddressTETL</class>				
+		<class>bidirectional.one.to.one.address.person.nullable.eager.person.address.nullable.lazy.B1t1PersonTETL</class>				
+
+		<class>bidirectional.one.to.one.address.person.nullable.eager.person.address.nullable.eager.B1t1AddressTETE</class>				
+		<class>bidirectional.one.to.one.address.person.nullable.eager.person.address.nullable.eager.B1t1PersonTETE</class>				
+
+		<class>bidirectional.one.to.one.address.person.nullable.lazy.person.address.notnullable.lazy.B1t1AddressTLFL</class>				
+		<class>bidirectional.one.to.one.address.person.nullable.lazy.person.address.notnullable.lazy.B1t1PersonTLFL</class>				
+
+		<class>bidirectional.one.to.one.address.person.nullable.lazy.person.address.notnullable.eager.B1t1AddressTLFE</class>				
+		<class>bidirectional.one.to.one.address.person.nullable.lazy.person.address.notnullable.eager.B1t1PersonTLFE</class>				
+
+		<class>bidirectional.one.to.one.address.person.nullable.lazy.person.address.nullable.lazy.B1t1AddressTLTL</class>				
+		<class>bidirectional.one.to.one.address.person.nullable.lazy.person.address.nullable.lazy.B1t1PersonTLTL</class>
+		
+		<class>bidirectional.one.to.one.address.person.nullable.lazy.person.address.nullable.eager.B1t1AddressTLTE</class>				
+		<class>bidirectional.one.to.one.address.person.nullable.lazy.person.address.nullable.eager.B1t1PersonTLTE</class>				
+
+	<!-- 
+ 	-->
+
+        <properties>
+            <property name="javax.persistence.jdbc.driver" value="org.h2.Driver" />
+            <property name="javax.persistence.jdbc.url" value="jdbc:h2:mem:db1;DB_CLOSE_DELAY=-1;MVCC=TRUE" />
+            <property name="javax.persistence.jdbc.user" value="sa" />
+            <property name="javax.persistence.jdbc.password" value="" />
+        <!-- 
+            <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver" />
+            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql:hibernate" />
+            <property name="javax.persistence.jdbc.user" value="postgres" />
+            <property name="javax.persistence.jdbc.password" value="password" />
+ -->
+
+            <property name="hibernate.hbm2ddl.auto" value="create" />
+
+            <property name="hibernate.show_sql" value="false" />
+            <property name="hibernate.use_sql_comments" value="false" />
+            <property name="hibernate.format_sql" value="true" />
+
+            <property name="hibernate.generate_statistics" value="true" />
+            
+        </properties>
+
+    </persistence-unit>
+
+</persistence>

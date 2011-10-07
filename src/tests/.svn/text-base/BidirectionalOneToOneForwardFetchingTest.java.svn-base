@@ -1,0 +1,66 @@
+package tests;
+
+import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.persistence.FetchType;
+import javax.persistence.OneToOne;
+
+import org.hibernate.classic.Session;
+import org.hibernate.stat.Statistics;
+import org.junit.Test;
+
+import tools.AnnotationParameter;
+import tools.Generator;
+import tools.HibernateTest;
+import tools.PropertyParameter;
+import tools.Results;
+import tools.TestQuery;
+
+
+public class BidirectionalOneToOneForwardFetchingTest extends HibernateTest {
+	
+	AnnotationParameter annotationLeft = new AnnotationParameter( OneToOne.class, new HashSet<PropertyParameter>(){{ add(optional); add(fetchType); }}) ;
+	AnnotationParameter annotationRight = new AnnotationParameter( OneToOne.class, new HashSet<PropertyParameter>(){{ add(optional); add(fetchType); add(mappedByB);}}) ;
+	
+	@Test
+	public void run(){
+				
+			testQuery = new TestQuery() {
+			@Override
+			public List<Object> runQuery(Session session) {
+				return session.createQuery("FROM A").list()  ;
+//				return session.createQuery("FROM A as a JOIN FETCH a.b").list()  ;
+			}
+		};
+				
+		    generator = new Generator(){	
+			public void setupData(Results results, Class clazzA, Class clazzB,Session session) throws Exception {
+			
+			Object a = clazzA.newInstance() ;
+			Object b = clazzB.newInstance() ;
+			
+			Field feildB = clazzA.getField("b");
+			feildB.set(a,b);			
+			
+			Field feildA = clazzB.getField("a");
+			feildA.set(b,a);			
+
+			session.save(b);				
+			session.save(a);
+			
+			results.setClassA(a.getClass());
+			results.setClassB(b.getClass());
+		}
+		};
+		
+		Set<Results> results = runTests(annotationLeft, annotationRight, 1, testMode );
+		printResults(results);
+		
+	}
+
+
+
+}

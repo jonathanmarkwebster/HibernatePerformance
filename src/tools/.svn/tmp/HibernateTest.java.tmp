@@ -1,0 +1,47 @@
+package tools;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.persistence.FetchType;
+
+import org.hibernate.stat.Statistics;
+
+public class HibernateTest {
+
+	HashSet<Boolean> booleanValues = new HashSet<Boolean>(){{ add(false); add(true);}};
+	HashSet<String>  mappedByValues = new HashSet<String>(){{ add("b"); }};
+	HashSet<FetchType> fetchTypes = new HashSet<FetchType>(){{ add(FetchType.LAZY); add(FetchType.EAGER); }};
+	
+	PropertyParameter<Boolean> optional = new PropertyParameter<Boolean>("optional", booleanValues ) ;
+	PropertyParameter<String>  mappedBy = new PropertyParameter<String>("mappedBy", mappedByValues ) ;
+	PropertyParameter<FetchType>  fetchType = new PropertyParameter<FetchType>("fetch", fetchTypes ) ;	
+	
+	TestMode testMode = TestMode.GENERATE_CLASSES ;	
+	
+	StatisticsChecker statisticsChecker = new StatisticsChecker() {
+		
+		@Override
+		public String getMessage() {
+			return "N + 1 DETECTED" ;
+		}
+		
+		@Override
+		public boolean checkCondition(Statistics statistics) {
+			return  statistics.getCloseStatementCount() > 1;
+		}
+	};	
+	
+	public void printResults( Set<Results> results) {
+		if( testMode == TestMode.RUN_TEST ){
+			
+			ResultsGrid resultsGrid = new ResultsGrid( results );
+			System.out.println( resultsGrid.toString() ) ;		
+			
+			for( Results result : results ){
+				System.out.println( result.toString() );
+			}
+			
+		}
+	}	
+}

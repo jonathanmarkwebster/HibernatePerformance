@@ -1,0 +1,56 @@
+IDEA: Detect N + 1 check session factory stats
+
+		if( "statements closed" - 
+			( "entities loaded" + "entities updated" + "entities deleted: ) > "entities loaded" )
+		{ N + 1 ! }             !!! Confirmed !!! :)
+		This formula seems to be logically equivalent to "entities fetched" > 0
+		as sessionFactoryStatistics.logSummary(); mentions ..."- entities fetched (minimize this)" it seems
+		that this property counts the number of additional fetches performed when an object is loaded.
+		
+		Question ? :
+		Does "entities fetched" > 0 indicate the presence of an n + 1 problem since it is the number of secondary loads.
+		If so is this true when n = 1 ?
+		
+		If this is true then
+		If the stats data was cleared ( or sessionFactory created ) and a query run ( this to associate a query with its results ),
+		then a non zero value for "entities fetched" at that point would
+		indicate an n + 1.  If this procedure were added to unit tests it could be used as an automated check for n + 1
+		problems in a systems data access.     
+		
+
+TASKS:
+
+Fully automate tests by capturing relevant sql and parameterising n
+
+Figure out relationship between join types and annotations
+
+Test N + 1 detection by adding it to test cases and compare to results
+Determine which query caused the n + 1
+
+Complete associations matrices for all association types
+
+Check em.find() and equivalent queries for n + 1 behaviour, is n = 1 in this case ?
+
+Mark annotation default options in Person and Address
+
+Check byte code interception effect on nullability caused n + 1 scenenarios  
+
+Check cascading fetch scenarios A -> B -> C ( would expect to see statement complexity = A * B * C e.g. does an n+1 at ->AB and ->BC = n * n fetches ? )
+
+Check parallel n + 1 scenarios i.e. A -> B, A -> C e.g can a n+1 at ->AB and ->AC be resolved with join fetching
+
+Convert HQL queries to named queries 
+
+Check join fetch solutions in criteria form
+
+L1 Cache
+	
+	Examine L1 cache use on fetch of a already fetched object	
+	
+	Examine L1 cache use on lazy association fetch of a already fetched object 
+
+	Examine L1 cache use on query fetch by matching condition of a already fetched object
+
+Examine Setting fetch depth
+
+	

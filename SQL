@@ -1,0 +1,59 @@
+SELECT
+ 
+current.relid AS relid,
+current.schemaname  AS schemaname, 
+current.relname  AS relname, 
+current.seq_scan		- start.seq_scan  AS seq_scan,
+current.seq_tup_read		- start.seq_tup_read AS seq_tup_read, 
+current.idx_scan		- start.idx_scan  AS idx_scan,        
+current.idx_tup_fetch		- start.idx_tup_fetch  AS idx_tup_fetch, 
+current.n_tup_ins		- start.n_tup_ins  AS n_tup_ins,
+current.n_tup_upd		- start.n_tup_upd AS n_tup_upd,
+current.n_tup_del		- start.n_tup_del AS n_tup_del, 
+current.n_tup_hot_upd		- start.n_tup_hot_upd AS tup_hot_upd, 
+current.n_live_tup		- start.n_live_tup AS n_live_tup,
+current.n_dead_tup		- start.n_dead_tup AS n_dead_tup,
+current.last_vacuum		- start.last_vacuum AS last_vacuum,
+current.last_autovacuum		- start.last_autovacuum AS last_autovacuum,
+current.last_analyze		- start.last_analyze AS last_analyze,       
+current.last_autoanalyze	- start.last_autoanalyze  AS last_autoanalyze
+
+FROM pg_stat_user_tables AS current, TemporaryUserTableStats AS start 
+
+WHERE current.relname <> 'temporaryusertablestats' AND current.relid = start.relid AND
+(
+	( current.seq_scan		- start.seq_scan  ) <> 0 OR
+	( current.seq_tup_read		- start.seq_tup_read ) <> 0 OR 
+	( current.idx_scan		- start.idx_scan  ) <> 0 OR        
+	( current.idx_tup_fetch		- start.idx_tup_fetch  ) <> 0 OR 
+	( current.n_tup_ins		- start.n_tup_ins  ) <> 0 OR
+	( current.n_tup_upd		- start.n_tup_upd ) <> 0 OR
+	( current.n_tup_del		- start.n_tup_del ) <> 0 OR 
+	( current.n_tup_hot_upd		- start.n_tup_hot_upd ) <> 0 OR 
+	( current.n_live_tup		- start.n_live_tup ) <> 0 OR
+	( current.n_dead_tup		- start.n_dead_tup ) <> 0
+
+) ;
+DROP TABLE  TemporaryUserTableStats ;
+
+CREATE TEMPORARY TABLE TemporaryUserTableStats (
+	relid				oid, 
+	schemaname			name, 
+	relname				name, 
+	seq_scan			bigint, 
+	seq_tup_read		bigint, 
+	idx_scan			bigint, 
+	idx_tup_fetch		bigint, 
+	n_tup_ins			bigint, 
+	n_tup_upd			bigint, 
+	n_tup_del			bigint, 
+	n_tup_hot_upd		bigint,
+	n_live_tup			bigint, 
+	n_dead_tup			bigint, 
+	last_vacuum			timestamp,
+	last_autovacuum		timestamp,   
+	last_analyze		timestamp,
+	last_autoanalyze	timestamp
+);
+
+INSERT INTO TemporaryUserTableStats SELECT * FROM pg_stat_user_tables ;

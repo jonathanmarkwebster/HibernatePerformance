@@ -1,0 +1,304 @@
+package tools;
+
+import java.io.File;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import javax.persistence.FetchType;
+
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.classic.Session;
+import org.hibernate.stat.Statistics;
+
+public class HibernateTest {
+
+	HashSet<Boolean> booleanValues = new HashSet<Boolean>(){{ add(false); add(true);}};
+	HashSet<Boolean> booleanValuesTrue = new HashSet<Boolean>(){{ add(true);}};
+	HashSet<Boolean> booleanValuesFalse = new HashSet<Boolean>(){{ add(false); }};
+	
+	
+	HashSet<String>  mappedByValuesB = new HashSet<String>(){{ add("b"); }};
+	HashSet<String>  mappedByValuesC = new HashSet<String>(){{ add("c"); }};
+	
+	HashSet<FetchType> fetchTypes = new HashSet<FetchType>(){{ add(FetchType.LAZY); add(FetchType.EAGER); }};
+	HashSet<FetchType> fetchTypesEager = new HashSet<FetchType>(){{ add(FetchType.EAGER); }};
+	HashSet<FetchType> fetchTypesLazy = new HashSet<FetchType>(){{ add(FetchType.LAZY); }};
+	
+	public PropertyParameter<Boolean> optional = new PropertyParameter<Boolean>("optional", booleanValues ) ;
+	public PropertyParameter<Boolean> optionalTrue = new PropertyParameter<Boolean>("optional", booleanValuesTrue ) ;
+	public PropertyParameter<Boolean> optionalFalse = new PropertyParameter<Boolean>("optional", booleanValuesFalse ) ;
+	
+	public PropertyParameter<String>  mappedByB = new PropertyParameter<String>("mappedBy", mappedByValuesB ) ;
+	public PropertyParameter<String>  mappedByC = new PropertyParameter<String>("mappedBy", mappedByValuesC ) ;
+	
+	public PropertyParameter<FetchType>  fetchType = new PropertyParameter<FetchType>("fetch", fetchTypes ) ;	
+	public PropertyParameter<FetchType>  fetchTypeEager = new PropertyParameter<FetchType>("fetch", fetchTypesEager ) ;	
+	public PropertyParameter<FetchType>  fetchTypeLazy = new PropertyParameter<FetchType>("fetch", fetchTypesLazy ) ;	
+	
+	int numberOfTestsRun = 0 ;
+	protected TestQuery testQuery ;
+	
+	public TestMode testMode = TestMode.RUN_TEST ;	
+	
+	protected StatisticsChecker statisticsChecker = new StatisticsChecker() {
+		
+		@Override
+		public String getMessage() {
+			return "N + 1 DETECTED" ;
+		}
+		
+		@Override
+		public boolean checkCondition(Statistics statistics) {
+			return  statistics.getCloseStatementCount() > 1;
+		}
+	};
+	protected Generator generator;	
+	
+	public void printResults( Set<Results> results) {
+		if( testMode == TestMode.RUN_TEST ){
+			
+	//		ResultsGrid resultsGrid = new ResultsGrid( results );
+	//		System.out.println( resultsGrid.toString() ) ;		
+			
+			for( Results result : results ){
+				System.out.println( result.toString() );
+			}
+			
+		}
+	}
+	
+	public Set<Results> runTests( AnnotationParameter annotationLeft, AnnotationParameter annotationRight, int n, TestMode testMode ) {
+		
+		Set<Results> results = new HashSet<Results>();
+		
+		for( Map<String,Object> leftParameter : annotationLeft.getParameters() ){
+			
+			for( Map<String,Object> rightParameter : annotationRight.getParameters() ){				
+				results.add( runTests( new AnnotationState(  annotationLeft.getAnnotationClass(), leftParameter ),
+									  new AnnotationState( annotationRight.getAnnotationClass(), rightParameter ), n, testMode ));
+			}
+		}
+		
+		return results ;
+	}	
+	
+	public Set<Results> runTests( AnnotationParameter annotationLeft, AnnotationParameter annotationRight, AnnotationParameter annotationUp, AnnotationParameter annotationDown, int n, TestMode testMode ) {
+		
+		Set<Results> results = new HashSet<Results>();
+		
+		for( Map<String,Object> leftParameter : annotationLeft.getParameters() ){
+
+			for( Map<String,Object> rightParameter : annotationRight.getParameters() ){	
+
+				for( Map<String,Object> upParameter : annotationUp.getParameters()){
+					
+					for( Map<String,Object> downParameter : annotationDown.getParameters())
+					{
+						results.add( runTests( new AnnotationState(  annotationLeft.getAnnotationClass(), leftParameter ),
+											   new AnnotationState(  annotationRight.getAnnotationClass(), rightParameter ),
+											   new AnnotationState(  annotationUp.getAnnotationClass(), upParameter ),
+											   new AnnotationState(  annotationDown.getAnnotationClass(), downParameter ), n, testMode ));
+					}
+				}
+			}
+		}
+		
+		return results ;
+	}		
+	
+	public Results runTests( AnnotationState leftAnnotationState,
+							 AnnotationState rightAnnotationState,
+							 AnnotationState upAnnotationState,
+							 AnnotationState downAnnotationState,
+							 int n, TestMode testMode ){
+		
+		////////////////////////////////////////////////////////////////
+		
+		numberOfTestsRun++ ;
+
+		Results results = new Results( statisticsChecker ) ;
+		results.setN(n);
+		results.setLeftAnnotationState( leftAnnotationState ) ;
+		results.setRightAnnotationState( rightAnnotationState ) ;
+		results.setUpAnnotationState( upAnnotationState );
+		results.setDownAnnotationState( upAnnotationState ) ;
+
+		try {
+
+			String suffix = "_" + numberOfTestsRun ;
+			String classNameB = "B" + suffix ;
+			String classNameA = "A" + suffix ;
+			String classNameC = "C" + suffix ;
+			
+			
+			if( testMode == testMode.GENERATE_CLASSES ){
+				generator.generateClasses( leftAnnotationState, rightAnnotationState, upAnnotationState, downAnnotationState, classNameB, classNameA, classNameC );
+			}else{
+				runTest(results, classNameB, classNameA, classNameC, n);
+			}
+
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}				
+
+		return results ;
+		
+		/////////////////////////////////////////////////////////////////////
+	}
+	
+	private void runTest( Results results, String classNameB, String classNameA, String classNameC, int n)  throws ClassNotFoundException, Exception{
+		
+		Class clazzA = Class.forName(classNameA);
+		Class clazzB = Class.forName(classNameB);		
+		Class clazzC = Class.forName(classNameC);		
+
+		SessionFactory sessionFactory  =
+			( new Configuration() )
+			.configure( new File("hibernate.cfg.xml") )
+			.addAnnotatedClass(clazzA)
+			.addAnnotatedClass(clazzB)
+			.addAnnotatedClass(clazzC)
+			.addProperties( new Properties(){{ put("hibernate.generate_statistics", "true"); }})
+			.buildSessionFactory(); 
+
+		Session session = sessionFactory.openSession() ;
+		
+		for( int i = 0 ; i < n ; i++ )
+			generator.setupData( results, clazzA, clazzB, clazzC, session );
+
+		Transaction transaction = session.beginTransaction() ;						
+		transaction.commit() ;
+		session.close();
+
+		session = sessionFactory.openSession() ;
+		transaction = session.beginTransaction() ;
+
+		sessionFactory.getStatistics().clear();
+		LogAppender hibernateSQLLogAppender = new LogAppender() ;
+		hibernateSQLLogAppender.open("org.hibernate.SQL");			
+
+		testQuery.runQuery(session);
+
+		results.setSessionStatistics( sessionFactory.getStatistics() );
+		results.setSqlStatements( hibernateSQLLogAppender.toString());
+		hibernateSQLLogAppender.close();
+
+		transaction.commit() ;
+		session.close();
+		sessionFactory.close() ;
+		
+	}
+
+	public Results runTests( AnnotationState leftAnnotationState, AnnotationState rightAnnotationState, int n, TestMode testMode ){
+
+		numberOfTestsRun++ ;
+
+		Results results = new Results( statisticsChecker ) ;
+		results.setN(n);
+		results.setLeftAnnotationState( leftAnnotationState ) ;
+		results.setRightAnnotationState( rightAnnotationState ) ;
+
+		try {
+
+			String suffix = "_" + numberOfTestsRun ;
+			String classNameB = "B" + suffix ;
+			String classNameA = "A" + suffix ;
+			
+			if( testMode != testMode.RUN_TEST ){
+				generator.generateClasses( leftAnnotationState, rightAnnotationState,classNameB, classNameA);
+			}else{
+				runTest(results, classNameB, classNameA, n);
+			}
+
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}				
+
+		return results ;
+
+	}
+
+	public void runTest( Results results, String classNameB, String classNameA, int n ) throws ClassNotFoundException, Exception {
+		
+		Class clazzA = Class.forName(classNameA);
+		Class clazzB = Class.forName(classNameB);		
+
+		SessionFactory sessionFactory  =
+			( new Configuration() )
+			.configure( new File("hibernate.cfg.xml") )
+			.addAnnotatedClass(clazzA)
+			.addAnnotatedClass(clazzB)
+			.addProperties( new Properties(){{ put("hibernate.generate_statistics", "true"); }})
+			.buildSessionFactory(); 
+
+		Session session = sessionFactory.openSession() ;
+		
+		for( int i = 0 ; i < n ; i++ )
+			generator.setupData( results, clazzA, clazzB, session );
+
+		Transaction transaction = session.beginTransaction() ;						
+		transaction.commit() ;
+		session.close();
+
+		session = sessionFactory.openSession() ;
+		transaction = session.beginTransaction() ;
+
+		sessionFactory.getStatistics().clear();
+		LogAppender hibernateSQLLogAppender = new LogAppender() ;
+		hibernateSQLLogAppender.open("org.hibernate.SQL");			
+
+		testQuery.runQuery(session);
+
+		results.setSessionStatistics( sessionFactory.getStatistics() );
+		results.setSqlStatements( hibernateSQLLogAppender.toString());
+		hibernateSQLLogAppender.close();
+
+		transaction.commit() ;
+		session.close();
+		sessionFactory.close() ;
+	}
+	
+	protected Set<Results> runTests(AnnotationParameter annotationLeft, int i, TestMode testMode) {
+		
+		Set<Results> results = new HashSet<Results>();
+		
+		for( Map<String,Object> leftParameter : annotationLeft.getParameters() ){
+			
+				results.add( runTests( new AnnotationState(  annotationLeft.getAnnotationClass(), leftParameter ),i, testMode ));
+		}
+		
+		return results ;		
+	}
+
+	private Results runTests(AnnotationState annotationState, int i, TestMode testMode2) {
+		
+		numberOfTestsRun++ ;
+
+		Results results = new Results( statisticsChecker ) ;
+		results.setN(i);
+		results.setLeftAnnotationState( annotationState ) ;
+
+		try {
+
+			String suffix = "_" + numberOfTestsRun ;
+			String classNameB = "B" + suffix ;
+			String classNameA = "A" + suffix ;
+			
+			if( testMode != testMode.RUN_TEST ){
+				generator.generateClasses( annotationState, classNameB, classNameA );
+			}else{
+				runTest( results, classNameB, classNameA, i );
+			}
+
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}				
+
+		return results ;
+		
+	}	
+}
